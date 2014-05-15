@@ -29,9 +29,9 @@ class stateMachine():
 		if index < self.stateCount and index != self.curState:
 			self.oldState = self.curState
 			self.curState = index
-			if self.oldState > 0:
+			if self.oldState > -1:
 				self.stateList[self.oldState].onExit()
-			if index > 0:
+			if index > -1:
 				self.stateList[index].onEnter()
 	
 	def update(self):

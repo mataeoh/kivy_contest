@@ -3,13 +3,13 @@ from stateMachine import *
 STATE_NONE = 0
 STATE_RESET = 1
 STATE_MIX = 2
-STATE_PLAY = 3
-STATE_COMPLETE = 4
-STATE_FAIL = 5
-STATE_COUNT = 6
+STATE_READY = 3
+STATE_PLAY = 4
+STATE_COMPLETE = 5
+STATE_FAIL = 6
+STATE_COUNT = 7
 
 gameState = stateMachine(STATE_COUNT)
-
 
 class NumPuzzleGameBase():
 	bFirstGame = True
@@ -18,6 +18,9 @@ class NumPuzzleGameBase():
 	sound_wow = None
 	current_source = None
 	complete_picture = None
+	countdown = None
+	fcountdown = 0.0
+	countdown_str = ['Go!','1','2','3']
 	fTime = 0.0
 	buttonList = []
 	lastButton = None
@@ -41,6 +44,8 @@ class NumPuzzleGameBase():
 		gameState.stateList[STATE_RESET].onEnter = self.stateReset_onEnter
 		gameState.stateList[STATE_MIX].onEnter = self.stateMix_onEnter
 		gameState.stateList[STATE_MIX].onUpdate = self.stateMix_onUpdate
+		gameState.stateList[STATE_READY].onEnter = self.stateReady_onEnter
+		gameState.stateList[STATE_READY].onUpdate = self.stateReady_onUpdate
 		gameState.stateList[STATE_PLAY].onEnter = self.statePlay_onEnter
 		gameState.stateList[STATE_PLAY].onUpdate = self.statePlay_onUpdate
 		gameState.stateList[STATE_COMPLETE].onEnter = self.stateComplete_onEnter
@@ -66,6 +71,9 @@ class NumPuzzleGameBase():
 		pass
 
 	# states
+	def stateNone_onEnter(self):
+		pass
+		
 	def stateReset_onEnter(self):
 		pass
 		
@@ -73,6 +81,12 @@ class NumPuzzleGameBase():
 		pass
 		
 	def stateMix_onUpdate(self):
+		pass
+		
+	def stateReady_onEnter(self):
+		pass
+		
+	def stateReady_onUpdate(self):
 		pass
 	
 	def statePlay_onEnter(self):

@@ -1,13 +1,14 @@
 NumericKivy is numeric puzzle game.
 
-platform : PC, Android
+platform : Android or PC
 
+// Android (correct display resolution)
+to play, copy files to sdcard\kivy\NumericKivy folder and install kivy launcher then run:
+
+  select Numeric Kivy on kivy launcher
+  
+  
 // PC
 to play, install kivy and then run:
 
   python main.py
-  
-// Android
-to play, copy files to sdcard\kivy\NumericKivy folder and install kivy launcher then run:
-
-  select Numeric Kivy on kivy launcher

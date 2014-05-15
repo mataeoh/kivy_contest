@@ -19,8 +19,6 @@ from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty, StringProperty
 from kivy.vector import Vector
 
-if __name__ == 'android':
-    import android
 from cmath import polar, rect
 from copy import deepcopy
 from math import cos,sin,pi,sqrt,atan,atan2
@@ -72,11 +70,13 @@ class NumButton(Scatter):
 
 	def hide_font(self):
 		self.btn.text = ""
-
+		self.btn.background_color = (0,0,0,0.0)
+			
 	def show_font(self):
 		if self.isShow:
 			self.btn.text = str(self.myNum)
-			
+			self.btn.background_color = (10,10,10,0.2)
+			 			
 	def toggleShow(self):
 		if self.isShow:
 			self.hide()
@@ -115,8 +115,10 @@ class NumPuzzleGame(Widget, NumPuzzleGameBase):
 
 	# start - override states func
 	def stateNone_onEnter(self):
-		pass
-
+		self.labelText.text = self.level_name[self.level]
+		self.buildNumeric()
+		self.hide_font()
+		
 	def stateReset_onEnter(self):
 		if self.complete_picture:
 			self.remove_widget(self.complete_picture)
@@ -138,8 +140,21 @@ class NumPuzzleGame(Widget, NumPuzzleGameBase):
 				if self.checkComplete():
 					self.mixCount = self.numericCount ** 2
 		else:
-			gameState.set_state(STATE_PLAY)
+			gameState.set_state(STATE_READY)
 
+	def stateReady_onEnter(self):
+		self.countdown = Label(text=str(3), pos=(rootW*0.45, rootH*0.75), font_size=150)
+		self.add_widget(self.countdown)
+		self.fcountdown = 3.999999
+		
+	def stateReady_onUpdate(self):
+		self.fcountdown -= self.fFrameTime
+		if self.fcountdown < 0.0:
+			self.remove_widget(self.countdown)
+			gameState.set_state(STATE_PLAY)
+		else:
+			self.countdown.text = self.countdown_str[int(self.fcountdown)]
+		
 	def statePlay_onEnter(self):
 		self.labelText.text = "Time : 0.0s"
 
@@ -153,28 +168,34 @@ class NumPuzzleGame(Widget, NumPuzzleGameBase):
 		if self.sound_wow == None:
 			self.sound_wow = SoundLoader.load("wow.wav")
 		self.sound_wow.play()
-
+		self.hide_font()
+		
+		'''
+		# show complete image
 		self.complete_picture = Scatter(pos = (self.size[0]*0.075, self.size[1]*0.075), size = (self.size[0]*0.85, self.size[1]*0.65))
 		self.complete_picture.do_translation = False
 		self.complete_picture.do_rotation = False
 		self.complete_picture.do_scale = False
-		texture = Image(source = self.current_source).texture
+		texture = Image(source = choice(self.icons)).texture
 		texture.wrap = 'repeat'
 		texture.uvpos=(0.0, 0.0)
 		texture.uvsize=(1.0, -1.0)
 		with self.complete_picture.canvas:
 			Rectangle(texture = texture, size=self.complete_picture.size)
-		self.add_widget(self.complete_picture)
-
+		btn = Button(size=self.complete_picture.size)
+		btn.background_color = (0,0,0,0)
+		self.complete_picture.add_widget(btn)
+		self.add_widget(self.complete_picture, 0)
+		'''
 		content = Widget()
-		sizehintW = 0.6
-		sizehintH = 0.8
+		sizehintW = 0.8
+		sizehintH = 0.3
 		btnSizeW = rootW * sizehintW * 0.9
 		btnSizeH = rootH * sizehintH * 0.2
 		popup = Popup(title = " Complete!!", content=content, auto_dismiss=False, size_hint = (sizehintW, sizehintH))
-		content.add_widget(Label(font_size = 35, text = "Time : " + str("%.2f" % self.fTime) + "s", pos = (cx - btnSizeW*0.5, rootH * 0.2 + btnSizeH * 2.4), size=(btnSizeW, btnSizeH), align = 'left'))
-		content.add_widget(Label(font_size = 35, text = self.level_name[self.level] + " Complete!!", pos = (cx - btnSizeW*0.5, rootH * 0.2 + btnSizeH * 1.2), size=(btnSizeW, btnSizeH), align = 'left'))
-		btn_close = Button(text='Close', pos = (cx - btnSizeW*0.5, rootH * 0.2), size=(btnSizeW, btnSizeH))
+		content.add_widget(Label(font_size = 35, text = "Time : " + str("%.2f" % self.fTime) + "s", pos = (cx - btnSizeW*0.5, rootH * 0.4 + btnSizeH * 2.4), size=(btnSizeW, btnSizeH), align = 'left'))
+		content.add_widget(Label(font_size = 35, text = self.level_name[self.level] + " Complete!!", pos = (cx - btnSizeW*0.5, rootH * 0.4 + btnSizeH * 1.2), size=(btnSizeW, btnSizeH), align = 'left'))
+		btn_close = Button(text='Close', pos = (cx - btnSizeW*0.5, rootH * 0.4), size=(btnSizeW, btnSizeH))
 		content.add_widget(btn_close)
 		def closePopup(instance):
 			popup.dismiss()
@@ -306,8 +327,8 @@ class NumPuzzleGame(Widget, NumPuzzleGameBase):
 			self.switchButton(instance, self.lastButton, True)
 			
 		if self.checkComplete() == True:
-			gameState.set_state(STATE_COMPLETE)
 			self.lastButton.show()
+			gameState.set_state(STATE_COMPLETE)
 			
 	def switchButton(self, btn1, btn2, bNow):
 		oldCellPos = btn1.cellPos
@@ -362,6 +383,9 @@ class NumPuzzleGame(Widget, NumPuzzleGameBase):
 			if (1+btn.cellPos[0]+btn.cellPos[1]*self.numericCols) != btn.myNum:
 				return False
 		return True
+		
+	def hide_font(self):
+	 [i.hide_font() for i in self.buttonList]
 	
 	def update(self, dt):
 		self.fFrameTime = dt
@@ -430,7 +454,11 @@ class NumPuzzleApp(App):
 			popup.open()
 		
 	def post_build_init(self,ev):
-		if __name__ == 'android':
+		try:
+			import android
+		except:
+			pass
+		else:
 			android.map_key(android.KEYCODE_MENU, 1000)
 			android.map_key(android.KEYCODE_BACK, 1001)
 			android.map_key(android.KEYCODE_HOME, 1002)
